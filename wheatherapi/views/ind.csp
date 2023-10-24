@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Display User Location</title>
+    <style>
+        body {
+            background: linear-gradient(to bottom right, #a1c4fd, #c2e9fb);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #b3d4fc; /* Bluish pale */
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 70%;
+            max-width: 600px;
+        }
+
+        .container p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .currentWeather {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .currentWeather p {
+            margin: 0 10px;
+        }
+
+        .currentWeather span {
+            color: #2980b9; /* Darker blue */
+        }
+
+        #date {
+            display: block;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <%view container%>
+        <%c++
+            using namespace drogon;
+            std::string time = "@@time@@";
+            std::string temperature = "@@temperature@@";
+            std::string humidity = "@@humidity@@";
+            std::string windSpeed = "@@windSpeed@@";
+        %>
+        <%[[%]>
+            <p id="date">Today's Date: [[time]]</p>
+            <div class="currentWeather">
+                <p>Temperature: <span>[[temperature]]°C</span></p>
+                <p>Humidity: <span>[[humidity]]%</span></p>
+                <p>Wind Speed: <span>[[windSpeed]] m/s</span></p>
+            </div>
+        <%[[]]%>
+    <%[container]%>
+
+    <script>
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function showPosition(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            fetch(`/api?latitude=${latitude}&longitude=${longitude}`, {
+                method: 'GET'
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Request failed');
+                }
+            })
+            .then(data => {
+                document.getElementById('date').innerText = `Today's Date: ${data.time}`;
+                document.getElementById('temperature').innerText = `${data.temperature}°C`;
+                document.getElementById('humidity').innerText = `${data.humidity}%`;
+                document.getElementById('windSpeed').innerText = `${data.windSpeed} m/s`;
+            })
+            .catch(error => {
+                console.error('Error', error);
+            });
+        }
+
+        function showError(error) {
+            let errorMessage = "";
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = "User denied the request for Geolocation.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = "Location information is unavailable.";
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = "The request to get user location timed out.";
+                    break;
+                case error.UNKNOWN_ERROR:
+                    errorMessage = "An unknown error occurred.";
+                    break;
+            }
+            alert(errorMessage + " This application won't work without enabling location.");
+        }
+
+        window.onload = function() {
+            getLocation();
+        };
+    </script>
+</body>
+</html>
