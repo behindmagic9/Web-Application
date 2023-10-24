@@ -64,7 +64,7 @@ void wheather::wheather1(const HttpRequestPtr &req, std::function<void(const Htt
     newReq->setPath("/v4/weather/realtime");
     std::string location = std::to_string(latitude) + "," + std::to_string(longitude);
     newReq->setParameter("location", location);
-    newReq->setParameter("apikey", "eo5VW45tYUJERBikVlpdZmCdqnNpkk5c");
+    newReq->setParameter("apikey", "your key");
 
     client->sendRequest(newReq, [callback](ReqResult result, const HttpResponsePtr &response) {
         if (result == ReqResult::Ok) {
